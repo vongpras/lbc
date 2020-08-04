@@ -1,24 +1,82 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import "./App.css";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Link,
+  Redirect,
+} from "react-router-dom";
+import Offers from "./containers/Offers";
+import Offer from "./containers/Offer";
+import SignUp from "./containers/SignUp";
+import LogIn from "./containers/LogIn";
+import Cookies from "js-cookie";
+import { useHistory } from "react-router-dom";
+import Header from "./components/Header";
 
 function App() {
+  const tokenFromCookie = Cookies.get("userToken");
+
+  let newState;
+  if (tokenFromCookie) {
+    newState = { token: tokenFromCookie };
+  } else {
+    newState = null;
+  }
+
+  const [user, setUser] = useState(newState);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div>
+      <Router>
+        <div
+          style={{
+            display: "flex",
+            width: 1024,
+            margin: "auto",
+            marginTop: 20,
+            marginBottom: 20,
+          }}
         >
-          Learn React
-        </a>
-      </header>
+          <Header />
+          {user === null ? <Redirect to="/" /> : null}
+          <header>
+            {user === null ? (
+              <button>
+                <Link to="/log_in">Se connecter</Link>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  Cookies.remove("userToken");
+                  setUser(null);
+                }}
+              >
+                Se déconnecter
+              </button>
+            )}
+          </header>
+        </div>
+
+        <Switch>
+          <Route path="/offer/:id">
+            <Offer />
+          </Route>
+
+          <Route path="/sign_up">
+            <SignUp />
+          </Route>
+
+          <Route path="/log_in">
+            <LogIn setUser={setUser} />
+          </Route>
+
+          <Route path="/">
+            <Offers />
+          </Route>
+        </Switch>
+      </Router>
     </div>
   );
 }
